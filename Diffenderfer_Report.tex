@@ -1,0 +1,259 @@
+\documentclass[8pt]{article}
+ 
+\usepackage[margin=.8in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{marvosym,enumerate,color,mathrsfs,graphicx,epstopdf}
+\usepackage{enumitem}
+%\setenumerate{listparindent=\parindent}
+\def\cc{\color{blue}}
+%\usepackage[dvipsnames]{xcolor}
+\usepackage[normalem]{ulem}
+\usepackage{bm}
+\usepackage{mathtools}
+\usepackage{mathrsfs}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{courier}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tabularx, ragged2e, booktabs, caption}
+\usepackage{subcaption} %to have subfigures available
+\hypersetup{
+	%colorlinks,
+	%citecolor=black,
+	%filecolor=black,
+	%linkcolor=blue,
+	%urlcolor=black
+}
+\newcolumntype{C}[1]{>{\Centering}m{#1}}
+\renewcommand\tabularxcolumn[1]{C{#1}}
+
+%\usepackage{multirow}
+
+%Line Numbering
+\usepackage[mathlines]{lineno}
+%\linenumbers
+ 
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+%\newcommand{\dell}{\partial}
+\newcommand{\abs}[1]{\left\lvert{#1}\right\rvert}
+\newcommand{\dx}{\mathrm{d}x}
+\newcommand{\M}{\mathscr{M}}
+\newcommand{\E}{\mathscr{E}}
+\newcommand{\B}{\mathscr{B}}
+\newcommand{\scr}[1]{\mathscr{#1}}
+\newcommand{\Ns}{\mathscr{N}}
+\newcommand{\nm}{\mathrel{\unlhd}}
+\newcommand{\stcomp}[1]{{#1}^{\mathsf{c}}}
+\newcommand{\closure}[1]{\overline{#1}}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\sgn}{\operatorname{sgn}}
+\newcommand{\norm}[1]{\left\lVert{#1}\right\rVert}
+\newcommand{\LR}[1]{\left\langle{#1}\right\rangle}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{proposition*}{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem*{definition*}{Definition}
+\newtheorem{remark}[theorem]{Remark(s)}
+\newtheorem*{remark*}{Remark(s)}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem*{corollary*}{Corollary}
+\newtheorem{innerexercise}{Problem}
+\newenvironment{exercise}[1]
+  {\renewcommand\theinnerexercise{#1}\innerexercise}
+  {\endinnerexercise}
+
+% Upper and lower integrals
+%\def\upint{\mathchoice%
+%    {\mkern13mu\overline{\vphantom{\intop}\mkern7mu}\mkern-20mu}%
+%    {\mkern7mu\overline{\vphantom{\intop}\mkern7mu}\mkern-14mu}%
+%    {\mkern7mu\overline{\vphantom{\intop}\mkern7mu}\mkern-14mu}%
+%    {\mkern7mu\overline{\vphantom{\intop}\mkern7mu}\mkern-14mu}%
+%  \int}
+%\def\lowint{\mkern3mu\underline{\vphantom{\intop}\mkern7mu}\mkern-10mu\int}
+
+\title{CAP 6610: Machine Learning -- Homework 2}
+\author{James Diffenderfer}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+%\tableofcontents
+
+%\newpage
+
+\justify
+\begin{exercise}{1}
+Single Node Neural Network.
+\begin{enumerate}
+    \item[(a)] Implement a Single Node Neural Network using the Perceptron Learning Algorithm we proved in the class. The activation function is the sign function. Use the Bank-Marketing dataset for this part and choose a 50-50 training-testing split.
+    \item[(b)] Use Gradient Descent on a Single Sigmoid Neuron (e.g. $y = \sigma \left( \sum w_i x_i\right)$) instead of the sign function to learn the discriminant. Use the same dataset as in part (a).
+\end{enumerate}
+\end{exercise}
+
+\noindent \textbf{Data preprocessing.} Before implementing the perceptron learning algorithm or a single sigmoid neuron, I had to edit the data set to convert all of the nominal values to values that could be used as inputs to the learning algorithms for training and testing. For each column in the data set correspnding to a nominal value, I determined the number of possible choices for that column. Then I created a new column for each one of these choices and assigned a 1 if the original data point was classified as this nominal value and a 0 otherwise. For example, the second column of \texttt{bank.csv} had the header ``job". All of the possible options for this column were: 'admin.', 'blue-collar', 'entrepreneur', 'housemaid', 'management', 'retired', 'self-employed', 'services', 'student', 'technician', 'unemployed', and 'job\_unknown'. So I created a new data file with all of these values listed as a header for different columns. If a person had job 'retired' in the original data file \texttt{bank.csv}, then in the new data file they had a 1 in the 'retired' column and a 0 in all other columns pertaining to job categories. The routine for performing this operation for the entire data set in \texttt{bank.csv} can be found in the file 
+\texttt{problem1\_data.csv}. This program creates and save the data files \texttt{bank\_feature.csv} and \texttt{bank\_target.csv} which contain nominal representations of the feature and target data from \texttt{bank.csv}.\\
+
+\noindent \textbf{Results for (a).} For this part I coded the perceptron learning algorithm using python. I initialized each weight and bias term using \texttt{numpy.random.uniform(-1, 1)}. For the update of the weights, I used a fixed learning rate of 1. Results from one experiment can be found in Table 1. \\
+
+\centering
+\begin{minipage}{\linewidth}
+\label{tab:title}
+    \begin{tabular}{ | c | c | c |}
+    \hline
+    Number of Epochs & Misclassified Testing Points (Pre-Training) & Misclassified Testing Points (Post-Training) \\ \hline
+    100 & 74.1 \% & 11.78 \% \\ \hline
+    \end{tabular}
+\captionof{table}{Results from training and testing perceptron learning algorithm over 100 epochs.}
+\end{minipage}
+
+\justify
+\noindent \textbf{Results for (b).} For this part of the problem, I coded the single neuron neural network using python. As in part (a), I initialized each weight and bias term using \texttt{numpy.random.uniform(-1, 1)}. For the update of the weights, I found that using a full gradient descent took a fair amount of time since the training set had over 2000 rows with 44 columns (after data preprocessing). To decrease the training time I used a batch stochastic gradient descent with batch size 10. Using this method, I noticed an decrease in the amount of time training and the algorithm still achieved good classification results. Results from one experiment can be found in Table 2. \\
+
+\centering
+\begin{minipage}{\linewidth}
+\label{tab:title}
+    \begin{tabular}{ | c | c | c |}
+    \hline
+    Number of Epochs & Misclassified Testing Points (Pre-Training) & Misclassified Testing Points (Post-Training) \\ \hline
+    50 & 80.7 \% & 15.67 \% \\ \hline
+    \end{tabular}
+\captionof{table}{Results from training and testing single sigmoid neural network over 50 epochs.}
+\end{minipage}
+
+
+\newpage
+
+\justify
+\begin{exercise}{2}
+Code and test a two layer feed-forward net of sigmoidal nodes with two input units, ten hidden units and one output unit that learns the concept of a circle in 2D space. The concept is:
+\begin{align*}
+&\text{If} \ (x - a)^2 + (y - b)^2 < r^2 \ \Longrightarrow \ \langle x, y \rangle \text{ is labeled} \ +\\ 
+&\text{If} \ (x - a)^2 + (y - b)^2 \geq r^2 \ \Longrightarrow \ \langle x, y \rangle \text{ is labeled} \ -
+\end{align*}
+Draw all data from the unit square $[0, 1]^2$. Set $a = 0.5$, $b = 0.6$, $r = 0.4$. Generate 100 random samples uniformly distributed on $[0, 1]^2$ to train the network using
+error back-propagation and 100 random samples to test it. Repeat the procedure multiple
+epochs and with multiple initial weights. Report the changing accuracy and the hyperplanes
+corresponding to the hidden nodes (when the sigmoid is turned into a step function).\\
+\end{exercise}
+
+\noindent \textbf{Results.} For this problem, I used \texttt{numpy.random.uniform(-1, 1)} to generate each term for the initial weights and biases. For the backpropagation phase, I used a stochastic gradient descent to update the weights and I did not experience any trouble converging to local minimum that did a good job classifying the data points. To understand how the number of epochs affected how many points were appropriately classified, I experimented by starting with the same initial weights and training them over various numbers of epochs. Results of one of these experiments can be found in Figure 1, Figure 2, and Table 3. 
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Test100.png}}
+        %\caption{caption of first image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Test250.png}}
+        %\caption{caption of second image\\second line}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Test500.png}}
+        %\caption{caption of first image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Test5000.png}}
+        %\caption{caption of second image\\second line}
+    \end{subfigure}
+    \caption{Plots of classification of testing data over 100, 250, 500, and 5000 epochs. In these figures, dots represent the points that were classified as inside the circle and triangles represent the points that were classified as outside of the circle.}
+\end{figure}
+
+As observed in Figure 1, the model begins to classify the points correctly after 500 epochs. The classification errors observed inside of the circle when training over 5000 epochs are due to overfitting of the training data. Error is also introduced into the model by our choice of data points. Since they are randomly distributed in $[0,1]^2$, there are often regions of the training data near the boundary of the circle that do not contain any data points. This seemed to result in misclassification of data points in the testing set that fall within these areas. After making this observation, I experimented with training and testing on larger data sets taken from $[0,1]^2$ to satisfy my own curiousity and see what kind of effect it would have on the classification.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Train100.png}}
+        %\caption{caption of first image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Train250.png}}
+        %\caption{caption of second image\\second line}
+    \end{subfigure}
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Train500.png}}
+        %\caption{caption of first image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.49\textwidth}
+        \raisebox{-\height}{\includegraphics[width=\textwidth]{Train5000.png}}
+        %\caption{caption of second image\\second line}
+    \end{subfigure}
+    \caption{Plots of classification of training data over 100, 250, 500, and 5000 epochs. In these figures, dots represent the points that were classified as inside the circle and triangles represent the points that were classified as outside of the circle.}
+\end{figure}
+
+\centering
+\begin{minipage}{\linewidth}
+\label{tab:title}
+    \begin{tabular}{ | c | c | c | c |}
+    \hline
+    Number of Epochs & Training Error & Testing Error & Percent of Misclassified Points from Testing Set \\ \hline
+    0 & \texttt{13.3475946994} & \texttt{13.2513353381} & 53 \\ \hline
+    100 & \texttt{12.7437237191} & \texttt{11.6489353614} & 32 \\ \hline
+    250 & \texttt{12.7826655643} & \texttt{11.5108626528} & 30 \\ \hline
+    500 & \texttt{3.93259352257} & \texttt{3.98997848821} & 10 \\ \hline
+    2500 & \texttt{1.38300568026} & \texttt{3.32401140422} & 7 \\ \hline
+    5000 & \texttt{0.42780785905} & \texttt{2.61397288847} & 6 \\ \hline
+    \end{tabular}
+\captionof{table}{Summary of results from training and testing nerual network over 0, 100, 250, 500, 2500, and 5000 epochs.}
+\end{minipage}
+
+
+
+\newpage
+
+\justify
+\begin{exercise}{3}
+Consider the following 2 node Recurrent Neural Network (RNN).Each node receives input
+from that time step, and the output/state of the other node form the previous time step. Each
+node has a bias. Your goal is to learn $w_1, \hat{w}_1, b_1, w_2, \hat{w}_2, b_2$ from a given dataset using error back propagation through time. The dataset format is $[x_1, x_2, y_1, y_2]$.\\
+\end{exercise}
+
+\noindent \textbf{Results.} For this problem I coded the recurrent neural network using python. As in previous exercises, I initialized each weight and bias term using \texttt{numpy.random.uniform(-1, 1)}. For the backpropagation phase of the algorithm, I first computed the partial derivatives of the total error with respect to $w_1, \hat{w}_1, b_1, w_2, \hat{w}_2, b_2$ in terms of the outputs from each node in the network. Afterwards, I coded routines for computing these given a data point from the feature vector. To perform the updates for the weight and bias terms, I experimented with full gradient descent, batch stochastic gradient descent, and stochastic gradient descent. When using full gradient descent, my algorithm quickly converged to a local minimum of the error function which (very often) resulted in the erro function having a value greater than 23. When using batch stochastic gradient descent, I found that using a smaller batch size resulted in more consistent convergence to a local minimum yielding the value of approximately 0.16 for the error function. Below are the outputs from one experiment of this recurrent neural network trained over 100 epochs:\\
+
+\centering
+\texttt{------------------------- Final Weights -------------------------}
+\begin{align*}
+  \hat{w} &= [-0.712475, 0.313653] \\
+  b &= [0.200493, -0.913314] \\
+  w &= [1.5363, 1.46793]
+\end{align*}
+
+\texttt{-------------------------- Total Error --------------------------}
+\begin{align*}
+  \frac{1}{2} || t - o ||^2 = 0.16026
+\end{align*}
+
+\justify
+At the time of submission, the best result I can get for my algorithm is a minimum total error of approximately 0.16. I suspect that there is a small typo somewhere in my code but at the time of writing this report I was unable to locate and fix the typo.
+
+
+\end{document}
+
+% Figure Stuff
+\begin{figure}[H]
+	\includegraphics[trim={6cm, 0, 5cm, 2cm}, clip, width=\textwidth]{ortho_plot.png}
+	\vspace{-10mm}
+	\caption{Plot of $f(x) = e^x$ (solid line) and $p(x) = 2.23284 x^2 - 2.10538 x + 2.61885$ (dashed line), the polynomial constructed in 2 (a).}
+	\label{Figure 1}
+\end{figure}
